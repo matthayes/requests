@@ -29,6 +29,7 @@ from .structures import CaseInsensitiveDict
 from .auth import HTTPBasicAuth
 from .cookies import cookiejar_from_dict, get_cookie_header, _copy_cookie_jar
 from .exceptions import (
+    RequestException,
     HTTPError, MissingSchema, InvalidURL, ChunkedEncodingError,
     ContentDecodingError, ConnectionError, StreamConsumedError)
 from ._internal_utils import to_native_string, unicode_is_ascii
@@ -38,7 +39,7 @@ from .utils import (
     iter_slices, guess_json_utf, super_len, check_header_validity)
 from .compat import (
     cookielib, urlunparse, urlsplit, urlencode, str, bytes,
-    is_py2, chardet, builtin_str, basestring)
+    is_py2, builtin_str, basestring)
 from .compat import json as complexjson
 from .status_codes import codes
 
@@ -716,11 +717,6 @@ class Response(object):
         """Returns a PreparedRequest for the next request in a redirect chain, if there is one."""
         return self._next
 
-    @property
-    def apparent_encoding(self):
-        """The apparent encoding, provided by the chardet library."""
-        return chardet.detect(self.content)['encoding']
-
     def iter_content(self, chunk_size=1, decode_unicode=False):
         """Iterates over the response data.  When stream=True is set on the
         request, this avoids reading the content at once into memory for
@@ -831,9 +827,6 @@ class Response(object):
     def text(self):
         """Content of the response, in unicode.
 
-        If Response.encoding is None, encoding will be guessed using
-        ``chardet``.
-
         The encoding of the response content is determined based solely on HTTP
         headers, following RFC 2616 to the letter. If you can take advantage of
         non-HTTP knowledge to make a better guess at the encoding, you should
@@ -849,7 +842,7 @@ class Response(object):
 
         # Fallback to auto-detected encoding.
         if self.encoding is None:
-            encoding = self.apparent_encoding
+            raise RequestException("No encoding specified")
 
         # Decode unicode from given encoding.
         try:
@@ -874,9 +867,7 @@ class Response(object):
 
         if not self.encoding and self.content and len(self.content) > 3:
             # No encoding set. JSON RFC 4627 section 3 states we should expect
-            # UTF-8, -16 or -32. Detect which one to use; If the detection or
-            # decoding fails, fall back to `self.text` (using chardet to make
-            # a best guess).
+            # UTF-8, -16 or -32. Detect which one to use.
             encoding = guess_json_utf(self.content)
             if encoding is not None:
                 try:
