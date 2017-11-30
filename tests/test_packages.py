@@ -9,5 +9,5 @@ def test_can_access_idna_attribute():
     requests.packages.idna
 
 
-def test_can_access_chardet_attribute():
-    requests.packages.chardet
+# def test_can_access_chardet_attribute():
+#     requests.packages.chardet

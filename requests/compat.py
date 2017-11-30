@@ -8,7 +8,7 @@ This module handles import compatibility issues between Python 2 and
 Python 3.
 """
 
-import chardet
+import cchardet as chardet
 
 import sys
 

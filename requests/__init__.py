@@ -41,7 +41,7 @@ is at <http://python-requests.org>.
 """
 
 import urllib3
-import chardet
+import cchardet as chardet
 import warnings
 from .exceptions import RequestsDependencyWarning
 
@@ -65,17 +65,17 @@ def check_compatibility(urllib3_version, chardet_version):
     # Check chardet for compatibility.
     major, minor, patch = chardet_version.split('.')[:3]
     major, minor, patch = int(major), int(minor), int(patch)
-    # chardet >= 3.0.2, < 3.1.0
-    assert major == 3
-    assert minor < 1
-    assert patch >= 2
+    # cchardet 2.x.x
+    assert major == 2
+    assert minor >= 1
+    assert patch >= 1
 
 
 # Check imported dependencies for compatibility.
 try:
     check_compatibility(urllib3.__version__, chardet.__version__)
 except (AssertionError, ValueError):
-    warnings.warn("urllib3 ({0}) or chardet ({1}) doesn't match a supported "
+    warnings.warn("urllib3 ({0}) or cchardet ({1}) doesn't match a supported "
                   "version!".format(urllib3.__version__, chardet.__version__),
                   RequestsDependencyWarning)
 
